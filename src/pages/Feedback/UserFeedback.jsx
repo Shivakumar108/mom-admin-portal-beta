@@ -75,22 +75,39 @@ function UserFeedback() {
       : 'bg-gray-400 text-white px-4 py-1 rounded cursor-not-allowed';
   };
 
-  const handleResolve = (index, id) => {
-    const updated = [...filteredDetails];
-    updated[index].status = 'resolved';
-    setFilteredDetails(updated);
+  // ... existing code ...
+  const handleResolve = async (index, id) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/suggestions/update-status/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
 
-    const resolvedIds = JSON.parse(localStorage.getItem('resolvedSuggestions')) || [];
-    if (!resolvedIds.includes(id)) {
-      resolvedIds.push(id);
-      localStorage.setItem('resolvedSuggestions', JSON.stringify(resolvedIds));
-    }
+      if (!response.ok) {
+        throw new Error('Failed to update suggestion status');
+      }
 
-    const allUpdated = [...Details];
-    const i = allUpdated.findIndex(item => item._id === id);
-    if (i !== -1) {
-      allUpdated[i].status = 'resolved';
-      setDetails(allUpdated);
+      const updated = [...filteredDetails];
+      updated[index].status = 'resolved';
+      setFilteredDetails(updated);
+
+      const resolvedIds = JSON.parse(localStorage.getItem('resolvedSuggestions')) || [];
+      if (!resolvedIds.includes(id)) {
+        resolvedIds.push(id);
+        localStorage.setItem('resolvedSuggestions', JSON.stringify(resolvedIds));
+      }
+
+      const allUpdated = [...Details];
+      const i = allUpdated.findIndex(item => item._id === id);
+      if (i !== -1) {
+        allUpdated[i].status = 'resolved';
+        setDetails(allUpdated);
+      }
+    } catch (error) {
+      console.error('Error updating suggestion status:', error);
+      alert('Failed to update suggestion status. Please try again.');
     }
   };
 
